@@ -1,0 +1,40 @@
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap; /* allow wrap on small screens */
+}
+
+.stat-box {
+  flex: 1 1 200px; /* grow, shrink, min width */
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.stat-box h3 {
+  font-size: 16px;
+  margin-bottom: 10px;
+  color: #333333;
+}
+
+.stat-box p {
+  font-size: 16px;
+  font-weight: bold;
+  color: #007bff; /* blue, change as needed */
+  margin: 0;
+}
