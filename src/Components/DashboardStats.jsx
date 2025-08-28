@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "./DashboardStats.css";
 
 const DashboardStats = () => {
   const [stats, setStats] = useState({
@@ -14,7 +13,9 @@ const DashboardStats = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/state`); 
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/state`
+        );
         setStats(res.data);
       } catch (err) {
         console.error("Error fetching stats:", err);
@@ -24,26 +25,45 @@ const DashboardStats = () => {
     };
 
     fetchStats();
-  }, [setStats]);
+  }, []);
 
   if (loading) {
-    return <div className="container"><p>Loading stats...</p></div>;
+    return (
+      <div className="flex justify-center items-center h-40">
+        <p className="text-gray-600 text-lg">Loading stats...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="container">
-      <div className="header">
-        <div className="stat-box">
-          <h3>Total Quizzes</h3>
-          <p>{stats.totalQuizzes}</p>
+    <div className="">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Total Quizzes */}
+        <div className="bg-white shadow-lg rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:shadow-xl transition">
+          <h3 className="text-lg font-semibold text-gray-700">Total Quizzes</h3>
+          <p className="text-3xl font-bold text-indigo-600 mt-2">
+            {stats.totalQuizzes}
+          </p>
         </div>
-        <div className="stat-box">
-          <h3>Total Candidates</h3>
-          <p>{stats.totalCandidates}</p>
+
+        {/* Total Candidates */}
+        <div className="bg-white shadow-lg rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:shadow-xl transition">
+          <h3 className="text-lg font-semibold text-gray-700">
+            Total Candidates
+          </h3>
+          <p className="text-3xl font-bold text-green-600 mt-2">
+            {stats.totalCandidates}
+          </p>
         </div>
-        <div className="stat-box">
-          <h3>Active Quizzes</h3>
-          <p>{stats.activeQuizzes}</p>
+
+        {/* Active Quizzes */}
+        <div className="bg-white shadow-lg rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:shadow-xl transition">
+          <h3 className="text-lg font-semibold text-gray-700">
+            Active Quizzes
+          </h3>
+          <p className="text-3xl font-bold text-pink-600 mt-2">
+            {stats.activeQuizzes}
+          </p>
         </div>
       </div>
     </div>

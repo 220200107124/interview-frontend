@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import "./AdminResult.css";
-// import AdminSideBar from "../Components/AdminSideBar";
-// import Footer from "../Components/Footer";
+
 import CandidateModal from "./CandidateModal";
 import {
   BarChart,
@@ -28,70 +26,73 @@ function AdminResult() {
   // const handleDashBoard = () => navigate("/admin");
 
   useEffect(() => {
-  const fetchResults = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/result`);
-      const data = await res.json();
-      console.log("=== Raw Results from API ===", data); //  all results from API
-      setResults(data);
+    const fetchResults = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/result`);
+        const data = await res.json();
+        console.log("=== Raw Results from API ===", data); //  all results from API
+        setResults(data);
 
-      const summary = {};
-      data.forEach((r) => {
-        // Debug log each record
-        console.log(
-          `Candidate: ${r.candidateName}, Quiz: ${r.quizTitle}, Tech: ${r.tech}, Score: ${r.score}, Total Qs: ${r.totalQuestions}, Status: ${r.status}, Date: ${r.date}`
-        );
+        const summary = {};
+        data.forEach((r) => {
+          // Debug log each record
+          console.log(
+            `Candidate: ${r.candidateName}, Quiz: ${r.quizTitle}, Tech: ${r.tech}, Score: ${r.score}, Total Qs: ${r.totalQuestions}, Status: ${r.status}, Date: ${r.date}`
+          );
 
-        // Unique key per candidate + quiz title
-        const key = `${r.candidateName}__${r.quizTitle}`;
-        if (!summary[key]) {
-          summary[key] = {
-            candidateName: r.candidateName,
-            quizTitle: r.quizTitle,
-            tech: r.tech,
-            attempts: 0,
-            totalScore: 0,
-            attemptsData: [],
-          };
-          console.log(" First entry for:", r.candidateName, "in", r.quizTitle);
+          // Unique key per candidate + quiz title
+          const key = `${r.candidateName}__${r.quizTitle}`;
+          if (!summary[key]) {
+            summary[key] = {
+              candidateName: r.candidateName,
+              quizTitle: r.quizTitle,
+              tech: r.tech,
+              attempts: 0,
+              totalScore: 0,
+              attemptsData: [],
+            };
+            console.log(
+              " First entry for:",
+              r.candidateName,
+              "in",
+              r.quizTitle
+            );
+          }
+          summary[key].attempts += 1;
+          summary[key].totalScore += r.score;
+          summary[key].attemptsData.push(r);
 
-        }
-        summary[key].attempts += 1;
-        summary[key].totalScore += r.score;
-        summary[key].attemptsData.push(r);
+          console.log(
+            ` Updated Summary [${key}]: Attempts=${summary[key].attempts}, TotalScore=${summary[key].totalScore}`
+          );
+        });
 
-        console.log(
-          ` Updated Summary [${key}]: Attempts=${summary[key].attempts}, TotalScore=${summary[key].totalScore}`
-        );
-      });
+        // Sort each quiz's attempts by latest first
+        Object.keys(summary).forEach((key) => {
+          summary[key].attemptsData.sort(
+            (a, b) => new Date(b.date) - new Date(a.date)
+          );
+          console.log(
+            ` Sorted Attempts for ${key}:`,
+            summary[key].attemptsData.map((x) => ({
+              score: x.score,
+              date: x.date,
+            }))
+          );
+        });
 
-      // Sort each quiz's attempts by latest first
-      Object.keys(summary).forEach((key) => {
-        summary[key].attemptsData.sort(
-          (a, b) => new Date(b.date) - new Date(a.date)
-        );
-        console.log(
-          ` Sorted Attempts for ${key}:`,
-          summary[key].attemptsData.map((x) => ({
-            score: x.score,
-            date: x.date,
-          }))
-        );
-      });
+        console.log(" Final Candidate Summary", summary);
+        setCandidateSummary(summary);
+      } catch (error) {
+        console.error(" Error fetching results:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      console.log(" Final Candidate Summary", summary);
-      setCandidateSummary(summary);
-    } catch (error) {
-      console.error(" Error fetching results:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchResults();
-}, []);
-
+    fetchResults();
+  }, []);
 
   // Chart: average score per quiz per candidate
   const chartData = Object.keys(candidateSummary).map((key) => ({
@@ -99,115 +100,148 @@ function AdminResult() {
     quizTitle: candidateSummary[key].quizTitle,
     averageScore:
       candidateSummary[key].totalScore / candidateSummary[key].attempts,
-    fill:
-      candidateSummary[key].totalScore > 0 ? "#82ca9d" : "#8884d8",
+    fill: candidateSummary[key].totalScore > 0 ? "#82ca9d" : "#8884d8",
   }));
- 
 
   // Latest attempt for each quiz per candidate
   const latestResults = Object.keys(candidateSummary).map(
     (key) => candidateSummary[key].attemptsData[0]
   );
 
-  console.log("latestResults",latestResults)
+  console.log("latestResults", latestResults);
 
   return (
     <>
-      <main className="results-container">
-        <h1>Quiz Results</h1>
-        {/* <button className="back-btn" onClick={handleDashBoard}>
-          ← Back to Dashboard
-        </button> */}
+      <main className="results-container p-6 bg-gray-50 min-h-screen">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">
+          📊 Quiz Results
+        </h1>
 
         {loading ? (
-          <p>Loading results...</p>
+          <div className="flex flex-col items-center justify-center py-10">
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-3  -gray-600">Loading results...</p>
+          </div>
         ) : results.length === 0 ? (
-          <p>No results available yet.</p>
+          <p className="text-gray-600">No results available yet.</p>
         ) : (
           <>
-            {/* Charts */}
-            <div className="chart-section">
-              <h3>Average Scores per Quiz</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="quizTitle" />
-                  <YAxis domain={[0, 10]} />
-                  <Tooltip />
-                  <Bar dataKey="averageScore">
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+            {/* Charts Section */}
+            <div className="chart-section grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+              <div className="bg-white p-4 rounded-xl shadow">
+                <h3 className="text-lg font-semibold mb-4 text-gray-700">
+                  Average Scores per Quiz
+                </h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="quizTitle" />
+                    <YAxis domain={[0, 10]} />
+                    <Tooltip />
+                    <Bar dataKey="averageScore">
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
 
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="quizTitle" />
-                  <YAxis domain={[0, 10]} />
-                  <Tooltip />
-                  <Line
-                    type="monotone"
-                    dataKey="averageScore"
-                    stroke="#4facfe"
-                    strokeWidth={3}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <div className="bg-white p-4 rounded-xl shadow">
+                <h3 className="text-lg font-semibold mb-4 text-gray-700">
+                  Score Trends
+                </h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="quizTitle" />
+                    <YAxis domain={[0, 10]} />
+                    <Tooltip />
+                    <Line
+                      type="monotone"
+                      dataKey="averageScore"
+                      stroke="#4facfe"
+                      strokeWidth={3}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            {/* Table */}
-            <div className="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Candidate</th>
-                    <th>Quiz</th>
-                    <th>Technology</th>
-                    <th>Score</th>
-                    <th>Attempts</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {latestResults.map((r, idx) => {
-                    const key = `${r.candidateName}__${r.quizTitle}`;
-                    const attempts = candidateSummary[key]?.attempts || 1;
-                    return (
-                      <tr key={`${r._id}-${idx}`}>
-                        <td>{r?.candidateId?.name}</td>
-                        <td>{r.quizTitle}</td>
-                        <td>{r.tech}</td>
-                        <td>
-                          {r.score} / {r.totalQuestions}
-                        </td>
-                        <td>{attempts}</td>
-                        <td>{r.status || "Submitted"}</td>
-                        <td>{new Date(r.date).toLocaleString()}</td>
-                        <td>
-                          <button
-                            className="view-btn"
-                            onClick={() =>
-                              setSelectedCandidate(r)
-                            }
-                          >
-                            View Detail
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            {/* Results Table */}
+            <div className="table-wrapper bg-white rounded-xl shadow overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-max w-full border-collapse">
+                  <thead className="bg-gray-100 text-left hidden md:table-header-group">
+                    <tr>
+                      <th className="px-4 py-2">Candidate</th>
+                      <th className="px-4 py-2">Quiz</th>
+                      <th className="px-4 py-2">Technology</th>
+                      <th className="px-4 py-2">Score</th>
+                      <th className="px-4 py-2">Attempts</th>
+                      <th className="px-4 py-2">Status</th>
+                      <th className="px-4 py-2">Date</th>
+                      <th className="px-4 py-2">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {latestResults.map((r, idx) => {
+                      const key = `${r.candidateName}__${r.quizTitle}`;
+                      const attempts = candidateSummary[key]?.attempts || 1;
+                      return (
+                        <tr
+                          key={`${r._id}-${idx}`}
+                          className="border-t hover:bg-gray-50 flex flex-col md:table-row"
+                        >
+                          <td className="px-4 py-2 before:content-['Candidate:'] before:font-semibold md:before:content-none">
+                            {r?.candidateId?.name}
+                          </td>
+                          <td className="px-4 py-2 before:content-['Quiz:'] before:font-semibold md:before:content-none">
+                            {r.quizTitle}
+                          </td>
+                          <td className="px-4 py-2 before:content-['Technology:'] before:font-semibold md:before:content-none">
+                            {r.tech}
+                          </td>
+                          <td className="px-4 py-2 font-semibold before:content-['Score:'] before:font-semibold md:before:content-none">
+                            {r.score} / {r.totalQuestions}
+                          </td>
+                          <td className="px-4 py-2 before:content-['Attempts:'] before:font-semibold md:before:content-none">
+                            {attempts}
+                          </td>
+                          <td className="px-4 py-2 before:content-['Status:'] before:font-semibold md:before:content-none">
+                            <span
+                              className={`px-2 py-1 rounded text-xs ${
+                                r.status === "Passed"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-yellow-100 text-yellow-700"
+                              }`}
+                            >
+                              {r.status || "Submitted"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2 before:content-['Date:'] before:font-semibold md:before:content-none">
+                            {new Date(r.date).toLocaleString()}
+                          </td>
+                          <td className="px-4 py-2 before:content-['Actions:'] before:font-semibold md:before:content-none">
+                            <button
+                              className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                              onClick={() => setSelectedCandidate(r)}
+                            >
+                              View Detail
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </>
         )}
       </main>
+
       {/* <Footer /> */}
 
       {selectedCandidate && (

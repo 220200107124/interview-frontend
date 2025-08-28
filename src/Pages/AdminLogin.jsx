@@ -1,141 +1,56 @@
-// import "./AdminLogin.css";
-// import { useState } from "react";
-
-// function AdminLogin({ onLogin }) {
-//   // const [role, setRole] = useState('');
-//   const [password, setPassword] = useState("");
-//   const [error, setError] = useState("");
-//   const [email, setEmail] = useState("");
-  
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     if (password === "admin123" && email === "admin123@gmail.com") {
-//       onLogin();
-//     } else {
-//       setError("Invalid Email or Password");
-//     }
-//   };
-
-//   return (
-//     <div className="admin-login-container">
-//       <div className="admin-login-box">
-//         <div className="admin-login-header">
-//           <svg
-//             className="shield-icon"
-//             fill="none"
-//             stroke="currentColor"
-//             strokeWidth="1.8"
-//             viewBox="0 0 24 24"
-//           >
-//             <path
-//               strokeLinecap="round"
-//               strokeLinejoin="round"
-//               d="M12 3L4 6v6c0 5.25 3.75 10.125 8 11 4.25-.875 8-5.75 8-11V6l-8-3z"
-//             />
-//           </svg>
-//           <h2>
-//             {" "}
-//             Questify <br />
-//             Admin Access
-//           </h2>
-//           <p>Please authenticate to access the admin panel</p>
-//         </div>
-
-//         <form className="admin-login-form" onSubmit={handleSubmit}>
-//           {/* <label>Role</label>
-//           <select value={role} onChange={e => setRole(e.target.value)} required>
-//             <option value="">Select Your Role</option>
-//             <option value="Administrator">Administrator</option>
-//             <option value="Candidate">Candidate</option>
-//           </select> */}
-
-//           <label>Email</label>
-//           <input
-//             type="email"
-//             placeholder="Enter your Email"
-//             value={email}
-//             onChange={(e) => setEmail(e.target.value)}
-//             required
-//           />
-//           <label>Password</label>
-//           <input
-//             type="password"
-//             placeholder="Enter your password"
-//             value={password}
-//             onChange={(e) => setPassword(e.target.value)}
-//             required
-//           />
-
-//           {error && <p className="error-text">{error}</p>}
-
-//           <button type="submit">Login to Admin Panel</button>
-//         </form>
-
-//         <div className="demo-info">
-//           Demo Access:
-//           <br />
-//           Email: admin123@gmail.com
-//           <br />
-//           Password: admin123
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default AdminLogin;
-import "./AdminLogin.css";
 import { useState } from "react";
+import { useFormik } from "formik";
 import axios from "axios";
+import { loginSchema } from "../utils/Schema";
 
 function AdminLogin({ onLogin }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  // Formik setup
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    validationSchema: loginSchema,
+    onSubmit: async (values) => {
+      setServerError("");
+      setLoading(true);
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/auth/login`,
+          values
+        );
 
-    try {
-      // Replace this URL with your backend login route
-      const response = await axios.post( `${process.env.REACT_APP_API_URL}/api/auth/login`, {
-        email,
-        password,
-      });
+        const { token, userInfo } = response.data;
 
-      // Assuming your backend returns { token: 'jwt-token' }
-      const { token } = response.data;
+        localStorage.setItem("adminToken", token);
+        localStorage.setItem("adminData", JSON.stringify(userInfo));
 
-      // Save JWT in localStorage (or cookies if preferred)
-      localStorage.setItem("adminToken", token);
-
-      // Call parent callback to indicate successful login
-      onLogin();
-    } catch (err) {
-      console.error(err);
-      if (err.response && err.response.data.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Login failed. Please try again.");
+        onLogin(); // redirect to dashboard
+      } catch (err) {
+        if (err.response && err.response.data.message) {
+          setServerError(err.response.data.message);
+        } else {
+          setServerError("Login failed. Please try again.");
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+  });
 
   return (
-    <div className="admin-login-container">
-      <div className="admin-login-box">
-        <div className="admin-login-header">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
+        {/* Logo & Heading */}
+        <div className="text-center mb-6">
           <svg
-            className="shield-icon"
+            className="mx-auto h-12 w-14 text-blue-500"
             fill="none"
             stroke="currentColor"
-            strokeWidth="1.8"
+            strokeWidth="2"
             viewBox="0 0 24 24"
           >
             <path
@@ -144,49 +59,67 @@ function AdminLogin({ onLogin }) {
               d="M12 3L4 6v6c0 5.25 3.75 10.125 8 11 4.25-.875 8-5.75 8-11V6l-8-3z"
             />
           </svg>
-          <h2>
-            Questify <br />
-            Admin Access
+          <h2 className="mt-2 text-2xl font-bold text-gray-700">
+            Questify Admin Access
           </h2>
-          <p>Please authenticate to access the admin panel</p>
+          <p className="text-gray-500 mt-1">
+            Please authenticate to access the admin panel
+          </p>
         </div>
 
-        <form className="admin-login-form" onSubmit={handleSubmit}>
-          <label>Email</label>
-          <input
-            type="email"
-            placeholder="Enter your Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <label>Password</label>
-          <input
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+        {/* Form */}
+        <form onSubmit={formik.handleSubmit} className="space-y-4">
+          {/* Email */}
+          <div>
+            <label className="block text-gray-700 mb-2">Email</label>
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              value={formik.values.email}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            {formik.touched.email && formik.errors.email && (
+              <p className="text-red-500 text-sm mt-2">{formik.errors.email}</p>
+            )}
+          </div>
 
-          {error && <p className="error-text">{error}</p>}
+          {/* Password */}
+          <div>
+            <label className="block text-gray-700 mb-1">Password</label>
+            <input
+              type="password"
+              name="password"
+              placeholder="Enter your password"
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            {formik.touched.password && formik.errors.password && (
+              <p className="text-red-500 text-sm mt-1">
+                {formik.errors.password}
+              </p>
+            )}
+          </div>
 
-          <button type="submit" disabled={loading}>
+          {/* Error */}
+          {serverError && <p className="text-red-500 text-sm">{serverError}</p>}
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+          >
             {loading ? "Logging in..." : "Login to Admin Panel"}
           </button>
         </form>
-
-        <div className="demo-info">
-          Demo Access:
-          <br />
-          Email: admin123@gmail.com
-          <br />
-          Password: admin123
-        </div>
       </div>
     </div>
   );
 }
 
 export default AdminLogin;
-
