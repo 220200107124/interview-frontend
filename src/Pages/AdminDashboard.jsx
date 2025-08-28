@@ -46,7 +46,7 @@ function AdminDashboard() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-4 sm:p-6">
+    <div className="w-full p-4 sm:p-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         {/* Header */}
         <div className="px-4 sm:px-6 py-4 border-b border-gray-200">

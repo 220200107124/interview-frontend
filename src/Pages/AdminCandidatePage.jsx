@@ -1,8 +1,9 @@
-// export default AdminCandidatePage;
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import { Plus, Edit, Trash2, Send, PlayCircle, BarChart2 } from "lucide-react";
+import { useFormik } from "formik";
+import { candidateSchema } from "../utils/Schema";
 
 const AdminCandidatePage = () => {
   const [candidates, setCandidates] = useState([]);
@@ -11,14 +12,9 @@ const AdminCandidatePage = () => {
   const [sending, setSending] = useState(false);
   const [editingCandidate, setEditingCandidate] = useState(null);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [serverError, setServerError] = useState("");
   const navigate = useNavigate();
-  const [newCandidate, setNewCandidate] = useState({
-    name: "",
-    lname: "",
-    email: "",
-    tech: "React",
-    difficulty: "Easy",
-  });
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
@@ -38,6 +34,35 @@ const AdminCandidatePage = () => {
   ];
   const difficultyOptions = ["Easy", "Beginner", "Intermediate", "Advanced"];
 
+  //  Formik for Add Candidate
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      lname: "",
+      email: "",
+      tech: "React",
+      difficulty: "Easy",
+    },
+    validationSchema: candidateSchema,
+    onSubmit: async (values, { resetForm }) => {
+      setServerError("");
+      setLoading(true);
+      try {
+        const res = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/candidates`,
+          values
+        );
+        setCandidates((prev) => [...prev, res.data]);
+        resetForm();
+      } catch (err) {
+        console.error("Add error:", err);
+        setServerError("Something went wrong. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    },
+  });
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -56,32 +81,6 @@ const AdminCandidatePage = () => {
     };
     fetchData();
   }, []);
-
-  const handleAddCandidate = async () => {
-    if (!newCandidate.name || !newCandidate.lname || !newCandidate.email) {
-      return alert("Please fill all fields");
-    }
-
-    setLoading(true);
-    try {
-      const res = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/candidates`,
-        newCandidate
-      );
-      setCandidates((prev) => [...prev, res.data]);
-      setNewCandidate({
-        name: "",
-        lname: "",
-        email: "",
-        tech: "React",
-        difficulty: "Easy",
-      });
-    } catch (err) {
-      console.error("Add error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleEditCandidate = (candidate) =>
     setEditingCandidate({ ...candidate });
@@ -165,93 +164,137 @@ const AdminCandidatePage = () => {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w">
       <h1 className="text-3xl font-bold mb-6 text-center">
         Candidate Management
       </h1>
 
       {loading && <div className="text-center">Loading...</div>}
-
-      {/* Add Candidate */}
-      <div className="bg-white shadow-lg rounded-2xl p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4">Add New Candidate</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <input
-            type="text"
-            placeholder="First Name"
-            className="border rounded-lg p-2"
-            value={newCandidate.name}
-            onChange={(e) =>
-              setNewCandidate({ ...newCandidate, name: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Last Name"
-            className="border rounded-lg p-2"
-            value={newCandidate.lname}
-            onChange={(e) =>
-              setNewCandidate({ ...newCandidate, lname: e.target.value })
-            }
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            className="border rounded-lg p-2"
-            value={newCandidate.email}
-            onChange={(e) =>
-              setNewCandidate({ ...newCandidate, email: e.target.value })
-            }
-          />
-          <select
-            className="border rounded-lg p-2"
-            value={newCandidate.tech}
-            onChange={(e) =>
-              setNewCandidate({ ...newCandidate, tech: e.target.value })
-            }
-          >
-            {techOptions.map((t) => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
-          <select
-            className="border rounded-lg p-2"
-            value={newCandidate.difficulty}
-            onChange={(e) =>
-              setNewCandidate({ ...newCandidate, difficulty: e.target.value })
-            }
-          >
-            {difficultyOptions.map((d) => (
-              <option key={d}>{d}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Buttons aligned inline */}
-        <div className="flex gap-4 mt-6">
-          <button
-            onClick={handleAddCandidate}
-            className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-          >
-            <Plus size={18} /> Add
-          </button>
-          <button
-            onClick={() => {
-              setEditingCandidate(null);
-              setNewCandidate({
-                name: "",
-                lname: "",
-                email: "",
-                tech: "",
-                difficulty: "",
-              });
-            }}
-            className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
-          >
-            Cancel
-          </button>
-        </div>
+      <div className="flex justify-end mb-6">
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+        >
+          <Plus size={18} /> Add Candidate
+        </button>
       </div>
+
+      {/* Add Candidate Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white w-full max-w-lg p-6 rounded-lg shadow-lg relative">
+            {/* Close button */}
+            <button
+
+
+              onClick={() => setIsAddModalOpen(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+            >
+              ✖
+            </button>
+
+            <h2 className="text-xl font-semibold mb-4">Add New Candidate</h2>
+
+            <form onSubmit={formik.handleSubmit} className="space-y-3">
+              {/* First Name */}
+              <div>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="First Name"
+                  className="w-full border rounded-lg p-2"
+                  value={formik.values.name}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.name && formik.errors.name && (
+                  <p className="text-red-500 text-sm">{formik.errors.name}</p>
+                )}
+              </div>
+
+              {/* Last Name */}
+              <div>
+                <input
+                  type="text"
+                  name="lname"
+                  placeholder="Last Name"
+                  className="w-full border rounded-lg p-2"
+                  value={formik.values.lname}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.lname && formik.errors.lname && (
+                  <p className="text-red-500 text-sm">{formik.errors.lname}</p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  className="w-full border rounded-lg p-2"
+                  value={formik.values.email}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.email && formik.errors.email && (
+                  <p className="text-red-500 text-sm">{formik.errors.email}</p>
+                )}
+              </div>
+
+              {/* Tech */}
+              <div>
+                <select
+                  name="tech"
+                  className="w-full border rounded-lg p-2"
+                  value={formik.values.tech}
+                  onChange={formik.handleChange}
+                >
+                  {techOptions.map((t) => (
+                    <option key={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Difficulty */}
+              <div>
+                <select
+                  name="difficulty"
+                  className="w-full border rounded-lg p-2"
+                  value={formik.values.difficulty}
+                  onChange={formik.handleChange}
+                >
+                  {difficultyOptions.map((d) => (
+                    <option key={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  <Plus size={18} /> {loading ? "Adding..." : "Add"}
+                </button>
+              </div>
+            </form>
+
+            {serverError && <p className="text-red-600 mt-2">{serverError}</p>}
+          </div>
+        </div>
+      )}
 
       {/* Candidate List */}
       <div className="bg-white shadow-lg rounded-2xl p-6">
@@ -261,10 +304,7 @@ const AdminCandidatePage = () => {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table
-                className="  min-w-max
-              w-full border rounded-lg "
-              >
+              <table className="min-w w-full border rounded-lg">
                 <thead className="bg-gray-100 hidden md:table-header-group">
                   <tr>
                     <th className="px-6 py-2 text-left">First Name</th>
@@ -316,25 +356,18 @@ const AdminCandidatePage = () => {
                         data-label="Actions"
                       >
                         <div className="flex flex-wrap gap-3">
-                          {/* Edit Button */}
                           <button
                             onClick={() => handleEditCandidate(candidate)}
                             className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
                           >
-                            <Edit size={16} />
-                            Edit
+                            <Edit size={16} /> Edit
                           </button>
-
-                          {/* Delete Button */}
                           <button
                             onClick={() => handleDeleteCandidate(candidate._id)}
                             className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600"
                           >
-                            <Trash2 size={16} />
-                            Delete
+                            <Trash2 size={16} /> Delete
                           </button>
-
-                          {/* Test Button */}
                           {candidate.token && (
                             <button
                               onClick={() =>
@@ -342,18 +375,14 @@ const AdminCandidatePage = () => {
                               }
                               className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600"
                             >
-                              <PlayCircle size={16} />
-                              Test
+                              <PlayCircle size={16} /> Test
                             </button>
                           )}
-
-                          {/* Result Button */}
                           <button
                             onClick={() => navigate("/admin-result")}
                             className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
                           >
-                            <BarChart2 size={16} />
-                            Result
+                            <BarChart2 size={16} /> Result
                           </button>
                         </div>
                       </td>
