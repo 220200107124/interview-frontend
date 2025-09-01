@@ -1,6 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 const CandidateQuizPage = () => {
   const { candidateId } = useParams();
@@ -54,59 +57,105 @@ const CandidateQuizPage = () => {
     }));
   };
 
-  const handleSubmitAll = async () => {
-    if (Object.keys(selectedAnswers).length !== quizzes.length) {
-      setMessage({
-        type: "error",
-        text: " Please answer all questions before submitting!",
-      });
-      return;
-    }
+ 
+  //   if (Object.keys(selectedAnswers).length !== quizzes.length) {
+  //     setMessage({
+  //       type: "error",
+  //       text: " Please answer all questions before submitting!",
+  //     });
+  //     return;
+  //   }
 
-    const formattedAnswers = quizzes.map((q, index) => ({
-      questionIndex: index,
-      selectedOption: selectedAnswers[index],
-    }));
+  //   const formattedAnswers = quizzes.map((q, index) => ({
+  //     questionIndex: index,
+  //     selectedOption: selectedAnswers[index],
+  //   }));
 
-    try {
-      const res = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/submit-quiz`,
-        {
-          assignmentId,
-          candidateId,
-          candidateName: candidate?.name || "",
-          candidateEmail: candidate?.email || "",
-          technology: candidate?.tech || "",
-          answers: formattedAnswers,
-        },
-        { headers: { "Content-Type": "application/json" } }
-      );
+  //   try {
+  //     const res = await axios.post(
+  //       `${process.env.REACT_APP_API_URL}/api/submit-quiz`,
+  //       {
+  //         assignmentId,
+  //         candidateId,
+  //         candidateName: candidate?.name || "",
+  //         candidateEmail: candidate?.email || "",
+  //         technology: candidate?.tech || "",
+  //         answers: formattedAnswers,
+  //       },
+  //       { headers: { "Content-Type": "application/json" } }
+  //     );
 
+  //     setSubmitted(true);
+  //     setMessage({
+  //       type: "success",
+  //       text: res.data.message || " Quiz submitted successfully!",
+  //     });
+  //     setTimeout(() => navigate("/thank-you"), 2000);
+  //   } catch (err) {
+  //     console.error("Submission error:", err);
+  //     if (
+  //       err.response?.status === 400 &&
+  //       err.response?.data?.error?.includes("already")
+  //     ) {
+  //       setMessage({
+  //         type: "info",
+  //         text: " You have already submitted this quiz.",
+  //       });
+  //       setSubmitted(true);
+  //     } else {
+  //       setMessage({
+  //         type: "error",
+  //         text: " Error submitting quiz, please try again.",
+  //       });
+  //     }
+  //   }
+  // };
+ const handleSubmitAll = async () => {
+  if (Object.keys(selectedAnswers).length !== quizzes.length) {
+    toast.error("Please answer all questions before submitting!");
+    return;
+  }
+
+  const formattedAnswers = quizzes.map((q, index) => ({
+    questionIndex: index,
+    selectedOption: selectedAnswers[index],
+  }));
+
+  try {
+    const res = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/submit-quiz`,
+      {
+        assignmentId,
+        candidateId,
+        candidateName: candidate?.name || "",
+        candidateEmail: candidate?.email || "",
+        technology: candidate?.tech || "",
+        answers: formattedAnswers,
+      },
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    setSubmitted(true);
+    toast.success(res.data.message || " Quiz submitted successfully!");
+
+    // 🔹 Expire token locally (clear quiz)
+    setQuizzes([]);
+    setTimeout(() => navigate("/thank-you"), 2000);
+  } catch (err) {
+    console.error("Submission error:", err);
+
+    if (
+      err.response?.status === 400 &&
+      err.response?.data?.error?.includes("already")
+    ) {
+      toast.info(" You have already submitted this quiz.");
       setSubmitted(true);
-      setMessage({
-        type: "success",
-        text: res.data.message || " Quiz submitted successfully!",
-      });
-      setTimeout(() => navigate("/thank-you"), 2000);
-    } catch (err) {
-      console.error("Submission error:", err);
-      if (
-        err.response?.status === 400 &&
-        err.response?.data?.error?.includes("already")
-      ) {
-        setMessage({
-          type: "info",
-          text: " You have already submitted this quiz.",
-        });
-        setSubmitted(true);
-      } else {
-        setMessage({
-          type: "error",
-          text: " Error submitting quiz, please try again.",
-        });
-      }
+    } else {
+      toast.error(" Error submitting quiz, please try again.");
     }
-  };
+  }
+};
+
 
   if (loading) {
     return (
@@ -207,7 +256,9 @@ const CandidateQuizPage = () => {
           {submitted ? " Submitted" : " Submit All Answers"}
         </button>
       </div>
+       <ToastContainer position="top-center" autoClose={3000} />
     </div>
+    
   );
 };
 

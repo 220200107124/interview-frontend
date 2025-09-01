@@ -48,6 +48,9 @@ function CandidateModal({ details, onClose }) {
             <strong>Quiz Title:</strong> {details?.quizTitle}
           </p>
           <p>
+            <strong>Mobile: </strong>{details?.candidateId?.mobile}
+          </p>
+          <p>
             <strong>Score:</strong> {details?.score}/{details?.totalQuestions}
           </p>
           <p>

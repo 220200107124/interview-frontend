@@ -25,74 +25,129 @@ function AdminResult() {
 
   // const handleDashBoard = () => navigate("/admin");
 
+  // useEffect(() => {
+  //   const fetchResults = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/result`);
+  //       const data = await res.json();
+  //       console.log("=== Raw Results from API ===", data); //  all results from API
+  //       setResults(data);
+
+  //       const summary = {};
+  //       data.forEach((r) => {
+  //         // Debug log each record
+  //         console.log(
+  //           `Candidate: ${r.candidateName}, Quiz: ${r.quizTitle}, Tech: ${r.tech}, Score: ${r.score}, Total Qs: ${r.totalQuestions}, Status: ${r.status}, Date: ${r.date}`
+  //         );
+
+  //         // Unique key per candidate + quiz title
+  //         const key = `${r.candidateName}__${r.quizTitle}`;
+  //         if (!summary[key]) {
+  //           summary[key] = {
+  //             candidateName: r.candidateName,
+  //             quizTitle: r.quizTitle,
+  //             mobile:r.mobile,
+  //             tech: r.tech,
+  //             attempts: 0,
+  //             totalScore: 0,
+  //             attemptsData: [],
+  //           };
+  //           console.log(
+  //             " First entry for:",
+  //             r.candidateName,
+  //             "in",
+  //             r.quizTitle
+  //           );
+  //         }
+  //         summary[key].attempts += 1;
+  //         summary[key].totalScore += r.score;
+  //         summary[key].attemptsData.push(r);
+
+  //         console.log(
+  //           ` Updated Summary [${key}]: Attempts=${summary[key].attempts}, TotalScore=${summary[key].totalScore}`
+  //         );
+  //       });
+
+  //       // Sort each quiz's attempts by latest first
+  //       Object.keys(summary).forEach((key) => {
+  //         summary[key].attemptsData.sort(
+  //           (a, b) => new Date(b.date) - new Date(a.date)
+  //         );
+  //         console.log(
+  //           ` Sorted Attempts for ${key}:`,
+  //           summary[key].attemptsData.map((x) => ({
+  //             score: x.score,
+  //             date: x.date,
+  //           }))
+  //         );
+  //       });
+
+  //       console.log(" Final Candidate Summary", summary);
+  //       setCandidateSummary(summary);
+  //     } catch (error) {
+  //       console.error(" Error fetching results:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchResults();
+  // }, []);
   useEffect(() => {
-    const fetchResults = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/result`);
-        const data = await res.json();
-        console.log("=== Raw Results from API ===", data); //  all results from API
-        setResults(data);
+  const fetchResults = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/result`);
+      const data = await res.json();
 
-        const summary = {};
-        data.forEach((r) => {
-          // Debug log each record
-          console.log(
-            `Candidate: ${r.candidateName}, Quiz: ${r.quizTitle}, Tech: ${r.tech}, Score: ${r.score}, Total Qs: ${r.totalQuestions}, Status: ${r.status}, Date: ${r.date}`
-          );
+      // 🔑 Filter only last 24 hours
+      const now = new Date();
+      const last24hResults = data.filter((r) => {
+        const attemptDate = new Date(r.date);
+        return now - attemptDate <= 24 * 60 * 60 * 1000; // difference ≤ 24h
+      });
 
-          // Unique key per candidate + quiz title
-          const key = `${r.candidateName}__${r.quizTitle}`;
-          if (!summary[key]) {
-            summary[key] = {
-              candidateName: r.candidateName,
-              quizTitle: r.quizTitle,
-              tech: r.tech,
-              attempts: 0,
-              totalScore: 0,
-              attemptsData: [],
-            };
-            console.log(
-              " First entry for:",
-              r.candidateName,
-              "in",
-              r.quizTitle
-            );
-          }
-          summary[key].attempts += 1;
-          summary[key].totalScore += r.score;
-          summary[key].attemptsData.push(r);
+      console.log("=== Last 24h Results ===", last24hResults);
+      setResults(last24hResults);
 
-          console.log(
-            ` Updated Summary [${key}]: Attempts=${summary[key].attempts}, TotalScore=${summary[key].totalScore}`
-          );
-        });
+      const summary = {};
+      last24hResults.forEach((r) => {
+        const key = `${r.candidateName}__${r.quizTitle}`;
+        if (!summary[key]) {
+          summary[key] = {
+            candidateName: r.candidateName,
+            quizTitle: r.quizTitle,
+            mobile: r.mobile,
+            tech: r.tech,
+            attempts: 0,
+            totalScore: 0,
+            attemptsData: [],
+          };
+        }
+        summary[key].attempts += 1;
+        summary[key].totalScore += r.score;
+        summary[key].attemptsData.push(r);
+      });
 
-        // Sort each quiz's attempts by latest first
-        Object.keys(summary).forEach((key) => {
-          summary[key].attemptsData.sort(
-            (a, b) => new Date(b.date) - new Date(a.date)
-          );
-          console.log(
-            ` Sorted Attempts for ${key}:`,
-            summary[key].attemptsData.map((x) => ({
-              score: x.score,
-              date: x.date,
-            }))
-          );
-        });
+      // Sort attempts by latest first
+      Object.keys(summary).forEach((key) => {
+        summary[key].attemptsData.sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
+        );
+      });
 
-        console.log(" Final Candidate Summary", summary);
-        setCandidateSummary(summary);
-      } catch (error) {
-        console.error(" Error fetching results:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setCandidateSummary(summary);
+    } catch (error) {
+      console.error(" Error fetching results:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchResults();
-  }, []);
+  fetchResults();
+}, []);
+
 
   // Chart: average score per quiz per candidate
   const chartData = Object.keys(candidateSummary).map((key) => ({
@@ -177,6 +232,8 @@ function AdminResult() {
                     <tr>
                       <th className="px-4 py-2">Candidate</th>
                       <th className="px-4 py-2">Quiz</th>
+                      <th className="px-4 py-2">Mobile</th>
+
                       <th className="px-4 py-2">Technology</th>
                       <th className="px-4 py-2">Score</th>
                       <th className="px-4 py-2">Attempts</th>
@@ -200,6 +257,7 @@ function AdminResult() {
                           <td className="px-4 py-2 before:content-['Quiz:'] before:font-semibold md:before:content-none">
                             {r.quizTitle}
                           </td>
+                          <td className="px-4 py-2 before:content-['mobile'] before:font-semibold md:before:content-none"> {r?.candidateId?.mobile}</td>
                           <td className="px-4 py-2 before:content-['Technology:'] before:font-semibold md:before:content-none">
                             {r.tech}
                           </td>

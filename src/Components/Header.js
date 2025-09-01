@@ -80,8 +80,20 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, ChevronDown, LogOut } from "lucide-react";
 
+// 🔹 Use the same logout utility function
+const handleLogout = (navigate) => {
+  if (window.confirm("Are you sure you want to logout?")) {
+    // Clear all admin-related localStorage data
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminData");
+    // Or use localStorage.clear() if you want to clear everything
+    
+    navigate("/"); // Consistent navigation target
+  }
+};
+
 const Header = () => {
-  const userInfo = JSON.parse(localStorage.getItem("adminData"));
+  const userInfo = JSON.parse(localStorage.getItem("adminData") || "{}");
   const navigate = useNavigate();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -99,16 +111,10 @@ const Header = () => {
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
-  // 🔹 Logout handler
-  const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    navigate("/");
-  };
-
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
-      {/* Page Title */}
-      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight">
+      {/* Page Title - Add left margin on mobile to avoid overlap with toggle button */}
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight ml-16 lg:ml-0">
         Admin Dashboard
       </h1>
 
@@ -142,16 +148,18 @@ const Header = () => {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">
-                      {userInfo?.name}
+                      {userInfo?.name || "Admin User"}
                     </p>
-                    <p className="text-xs text-gray-500">{userInfo?.email}</p>
+                    <p className="text-xs text-gray-500">
+                      {userInfo?.email || "admin@questify.com"}
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* 🔹 Logout Button */}
+              {/* 🔹 Logout Button with confirmation */}
               <button
-                onClick={handleLogout}
+                onClick={() => handleLogout(navigate)}
                 className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
               >
                 <LogOut className="w-4 h-4" />

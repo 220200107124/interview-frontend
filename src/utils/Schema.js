@@ -25,6 +25,13 @@ export const candidateSchema = Yup.object({
   email: Yup.string()
     .email("Invalid email address")
     .required("Email is required"),
+  
+mobile: Yup.string()
+  .matches(/^[0-9]{10}$/, "Enter a valid 10-digit mobile number")
+  .required("Mobile number is required"),
+
+
+
 
   tech: Yup.string()
     .oneOf(
