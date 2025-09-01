@@ -104,7 +104,7 @@ function AdminDashboard() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Category
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase  tracking-wider">
                         Difficulty
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -131,7 +131,8 @@ function AdminDashboard() {
                             {quiz.category}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-6 py-4  leading-loose h-30
+                        ">
                           <span
                             className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                               quiz.difficulty === "Easy"
@@ -153,14 +154,14 @@ function AdminDashboard() {
                               onClick={() =>
                                 navigate("/create-quiz", { state: { quiz } })
                               }
-                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors duration-200"
+                              className="inline-flex items-center gap-1 px-3 py-1.5  bg-blue-600  leading-loose  hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors duration-200"
                             >
-                              <Edit3 className="w-3 h-3" />
+                              <Edit3 className="w-3 h-3 " />
                               Manage
                             </button>
                             <button
                               onClick={() => handleDeleteQuiz(quiz._id)}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md transition-colors duration-200"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-600  leading-loose hover:bg-red-700 text-white text-xs font-medium rounded-md transition-colors duration-200"
                             >
                               <Trash2 className="w-3 h-3" />
                               Delete

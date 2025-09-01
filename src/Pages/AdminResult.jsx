@@ -21,79 +21,7 @@ function AdminResult() {
   const [candidateSummary, setCandidateSummary] = useState({});
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [loading, setLoading] = useState(true);
-  // const navigate = useNavigate();
-
-  // const handleDashBoard = () => navigate("/admin");
-
-  // useEffect(() => {
-  //   const fetchResults = async () => {
-  //     try {
-  //       setLoading(true);
-  //       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/result`);
-  //       const data = await res.json();
-  //       console.log("=== Raw Results from API ===", data); //  all results from API
-  //       setResults(data);
-
-  //       const summary = {};
-  //       data.forEach((r) => {
-  //         // Debug log each record
-  //         console.log(
-  //           `Candidate: ${r.candidateName}, Quiz: ${r.quizTitle}, Tech: ${r.tech}, Score: ${r.score}, Total Qs: ${r.totalQuestions}, Status: ${r.status}, Date: ${r.date}`
-  //         );
-
-  //         // Unique key per candidate + quiz title
-  //         const key = `${r.candidateName}__${r.quizTitle}`;
-  //         if (!summary[key]) {
-  //           summary[key] = {
-  //             candidateName: r.candidateName,
-  //             quizTitle: r.quizTitle,
-  //             mobile:r.mobile,
-  //             tech: r.tech,
-  //             attempts: 0,
-  //             totalScore: 0,
-  //             attemptsData: [],
-  //           };
-  //           console.log(
-  //             " First entry for:",
-  //             r.candidateName,
-  //             "in",
-  //             r.quizTitle
-  //           );
-  //         }
-  //         summary[key].attempts += 1;
-  //         summary[key].totalScore += r.score;
-  //         summary[key].attemptsData.push(r);
-
-  //         console.log(
-  //           ` Updated Summary [${key}]: Attempts=${summary[key].attempts}, TotalScore=${summary[key].totalScore}`
-  //         );
-  //       });
-
-  //       // Sort each quiz's attempts by latest first
-  //       Object.keys(summary).forEach((key) => {
-  //         summary[key].attemptsData.sort(
-  //           (a, b) => new Date(b.date) - new Date(a.date)
-  //         );
-  //         console.log(
-  //           ` Sorted Attempts for ${key}:`,
-  //           summary[key].attemptsData.map((x) => ({
-  //             score: x.score,
-  //             date: x.date,
-  //           }))
-  //         );
-  //       });
-
-  //       console.log(" Final Candidate Summary", summary);
-  //       setCandidateSummary(summary);
-  //     } catch (error) {
-  //       console.error(" Error fetching results:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchResults();
-  // }, []);
+ 
   useEffect(() => {
   const fetchResults = async () => {
     try {
@@ -193,7 +121,7 @@ function AdminResult() {
                     <XAxis dataKey="quizTitle" />
                     <YAxis domain={[0, 10]} />
                     <Tooltip />
-                    <Bar dataKey="averageScore">
+                    <Bar dataKey="averageScore" barSize={1}>
                       {chartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
@@ -216,7 +144,7 @@ function AdminResult() {
                       type="monotone"
                       dataKey="averageScore"
                       stroke="#4facfe"
-                      strokeWidth={3}
+                      strokeWidth={1}
                       activeDot={{ r: 6 }}
                     />
                   </LineChart>
