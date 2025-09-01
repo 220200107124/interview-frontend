@@ -408,14 +408,15 @@ const CreateQuizpage = () => {
                 <h3 className="text-lg font-semibold text-gray-800">
                   Questions
                 </h3>
-                <button
+                {/* <button
                   onClick={addQuestion}
                   disabled={saving}
                   className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
                 >
                   <PlusIcon />
                   <span>Add Question</span>
-                </button>
+                  
+                </button> */}
               </div>
 
               <div className="space-y-6">
@@ -437,6 +438,7 @@ const CreateQuizpage = () => {
                         >
                           <TrashIcon />
                         </button>
+                        
                       )}
                     </div>
 
@@ -491,12 +493,25 @@ const CreateQuizpage = () => {
                             placeholder={`Option ${optionIndex + 1}`}
                             className="flex-1 rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
                           />
+                          
                         </div>
                       ))}
                     </div>
+                
                   </div>
+                  
                 ))}
               </div>
+                <button
+                  onClick={addQuestion}
+                  disabled={saving}
+                  className="inline-flex items-center gap-4 px-3 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
+                >
+                  <PlusIcon />
+                  <span>Add Question</span>
+                  
+                </button>
+                     
             </div>
           </div>
 
