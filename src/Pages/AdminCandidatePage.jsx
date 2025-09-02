@@ -21,11 +21,19 @@ const AdminCandidatePage = () => {
   const [results, setResults] = useState([]);
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/api/result`)
-      .then((res) => res.json())
-      .then((data) => setResults(data))
-      .catch((err) => console.error("Fetch error:", err));
-  }, []);
+    const fetchResults=async()=>{
+      try{
+        const res =await axios.get(`${process.env.REACT_APP_API_URL}/api/result`);
+        setResults(res.data);
+
+      }
+      catch(err){
+        toast.error("failed to fetch results",err);
+      }
+
+    }
+    fetchResults();
+  },[]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
@@ -64,6 +72,7 @@ const AdminCandidatePage = () => {
           `${process.env.REACT_APP_API_URL}/api/candidates`,
           values
         );
+
         console.log("add response", res.data);
         setCandidates((prev) => [...prev, res.data]);
         resetForm();
@@ -72,9 +81,11 @@ const AdminCandidatePage = () => {
         // Success toast
         toast.success("Candidate added successfully!");
       } catch (err) {
-        console.error("Add error:", err);
-        setServerError("Something went wrong. Please try again.");
-
+        if (err.response && err.response.data && err.response.data.error) {
+          toast.error(err.response.data.error);
+        } else {
+          toast.error("Something went wrong. Please try again.");
+        }
         // Error toast
         toast.error("Failed to add candidate. Please try again.");
       } finally {
@@ -91,9 +102,11 @@ const AdminCandidatePage = () => {
         const [cRes, qRes] = await Promise.all([
           axios.get(`${process.env.REACT_APP_API_URL}/api/candidates`),
           axios.get(`${process.env.REACT_APP_API_URL}/api/quizzes`),
+          
         ]);
         setCandidates(cRes.data);
         setQuizzes(qRes.data);
+        
       } catch (err) {
         toast.error("Fetch error:", err);
         toast.error("Failed to load data. Please refresh the page.");
@@ -109,7 +122,7 @@ const AdminCandidatePage = () => {
 
   const handleUpdateCandidate = async () => {
     setLoading(true);
-
+  
     try {
       const res = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/candidates/${editingCandidate._id}`,
@@ -140,7 +153,7 @@ const AdminCandidatePage = () => {
 
         toast.success("Candidate deleted successfully!");
       } catch (err) {
-        console.error("Delete error:", err);
+       
         toast.error("Failed to delete candidate. Please try again.");
       }
     }
@@ -184,7 +197,7 @@ const AdminCandidatePage = () => {
       toast.success(response.data.message || "Quiz assigned successfully!");
       setEditingCandidate(null);
     } catch (error) {
-      console.error("Assignment error:", error);
+    
       toast.error("Error sending test. Try again later.");
     } finally {
       setSending(false);
@@ -448,33 +461,36 @@ const AdminCandidatePage = () => {
                                   r.candidateId?._id === candidate._id &&
                                   r.status === "submitted"
                               ) ? (
-                                <button
-                                  disabled
-                                  className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-gray-400 text-white rounded-lg cursor-not-allowed"
-                                >
-                                  Submitted
-                                </button>
+                                <>
+                                  <button
+                                    disabled
+                                    className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-gray-400 text-white rounded-lg cursor-not-allowed"
+                                  >
+                                    Submitted
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      navigate("/admin-result");
+                                      toast.success("Navigating to results...");
+                                    }}
+                                    className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                                  >
+                                    <BarChart2 size={16} /> Result
+                                  </button>
+                                </>
                               ) : (
-                                <button
-                                  onClick={() => {
-                                    navigate(`/quiz/${candidate.token}`);
-                                    toast.success("Navigating to quiz...");
-                                  }}
-                                  className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600"
-                                >
-                                  <PlayCircle size={16} /> Test
-                                </button>
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      navigate(`/quiz/${candidate.token}`);
+                                      toast.success("Navigating to quiz...");
+                                    }}
+                                    className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600"
+                                  >
+                                    <PlayCircle size={16} /> Test
+                                  </button>
+                                </>
                               )}
-
-                              <button
-                                onClick={() => {
-                                  navigate("/admin-result");
-                                  toast.success("Navigating to results...");
-                                }}
-                                className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                              >
-                                <BarChart2 size={16} /> Result
-                              </button>
                             </>
                           )}
                         </div>

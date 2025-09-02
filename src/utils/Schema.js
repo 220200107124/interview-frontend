@@ -1,3 +1,4 @@
+
 import * as Yup from "yup";
 
 
@@ -43,4 +44,6 @@ mobile: Yup.string()
   difficulty: Yup.string()
     .oneOf(["Easy", "Beginner", "Intermediate", "Advanced"], "Invalid difficulty option")
     .required("Difficulty is required"),
-});
+      
+    
+})
