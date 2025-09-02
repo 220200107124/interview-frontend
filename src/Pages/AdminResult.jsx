@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-
 import CandidateModal from "./CandidateModal";
+import { ToastContainer,toast } from "react-toastify";
+import"react-toastify/dist/ReactToastify.css"
 import {
   BarChart,
   Bar,
@@ -14,68 +15,66 @@ import {
   Cell,
 } from "recharts";
 
-// import { useNavigate } from "react-router-dom";
-
 function AdminResult() {
   const [results, setResults] = useState([]);
   const [candidateSummary, setCandidateSummary] = useState({});
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [loading, setLoading] = useState(true);
- 
+
   useEffect(() => {
-  const fetchResults = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/result`);
-      const data = await res.json();
+    const fetchResults = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/result`);
+        const data = await res.json();
+        toast.success("Results fetched successfully");
 
-      // 🔑 Filter only last 24 hours
-      const now = new Date();
-      const last24hResults = data.filter((r) => {
-        const attemptDate = new Date(r.date);
-        return now - attemptDate <= 24 * 60 * 60 * 1000; // difference ≤ 24h
-      });
+        // Filter only last 24 hours
+        const now = new Date();
+        const last24hResults = data.filter((r) => {
+          const attemptDate = new Date(r.date);
+          return now - attemptDate <= 48 * 60 * 60 * 1000; // difference ≤ 24h
+        });
 
-      console.log("=== Last 24h Results ===", last24hResults);
-      setResults(last24hResults);
+        console.log("=== Last 24h Results ===", last24hResults);
+        setResults(last24hResults);
 
-      const summary = {};
-      last24hResults.forEach((r) => {
-        const key = `${r.candidateName}__${r.quizTitle}`;
-        if (!summary[key]) {
-          summary[key] = {
-            candidateName: r.candidateName,
-            quizTitle: r.quizTitle,
-            mobile: r.mobile,
-            tech: r.tech,
-            attempts: 0,
-            totalScore: 0,
-            attemptsData: [],
-          };
-        }
-        summary[key].attempts += 1;
-        summary[key].totalScore += r.score;
-        summary[key].attemptsData.push(r);
-      });
+        const summary = {};
+        last24hResults.forEach((r) => {
+          const key = `${r.candidateName}__${r.quizTitle}`;
+          if (!summary[key]) {
+            summary[key] = {
+              candidateName: r.candidateName,
+              quizTitle: r.quizTitle,
+              mobile: r.mobile,
+              tech: r.tech,
+              attempts: 0,
+              totalScore: 0,
+              attemptsData: [],
+            };
+          }
+          summary[key].attempts += 1;
+          summary[key].totalScore += r.score;
+          summary[key].attemptsData.push(r);
+        });
 
-      // Sort attempts by latest first
-      Object.keys(summary).forEach((key) => {
-        summary[key].attemptsData.sort(
-          (a, b) => new Date(b.date) - new Date(a.date)
-        );
-      });
+        // Sort attempts by latest first
+        Object.keys(summary).forEach((key) => {
+          summary[key].attemptsData.sort(
+            (a, b) => new Date(b.date) - new Date(a.date)
+          );
+        });
 
-      setCandidateSummary(summary);
-    } catch (error) {
-      console.error(" Error fetching results:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        setCandidateSummary(summary);
+      } catch (error) {
+        toast.error(" Error fetching results:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchResults();
-}, []);
-
+    fetchResults();
+  }, []);
 
   // Chart: average score per quiz per candidate
   const chartData = Object.keys(candidateSummary).map((key) => ({
@@ -121,7 +120,11 @@ function AdminResult() {
                     <XAxis dataKey="quizTitle" />
                     <YAxis domain={[0, 10]} />
                     <Tooltip />
-                    <Bar dataKey="averageScore" barSize={1}>
+                    <Bar
+                      dataKey="averageScore"
+                      barSize={40}
+                      barCategoryGap="20%"
+                    >
                       {chartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
@@ -139,7 +142,7 @@ function AdminResult() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="quizTitle" />
                     <YAxis domain={[0, 10]} />
-                    <Tooltip />
+                    <Tooltip/>
                     <Line
                       type="monotone"
                       dataKey="averageScore"
@@ -185,7 +188,10 @@ function AdminResult() {
                           <td className="px-4 py-2 before:content-['Quiz:'] before:font-semibold md:before:content-none">
                             {r.quizTitle}
                           </td>
-                          <td className="px-4 py-2 before:content-['mobile'] before:font-semibold md:before:content-none"> {r?.candidateId?.mobile}</td>
+                          <td className="px-4 py-2 before:content-['mobile'] before:font-semibold md:before:content-none">
+                            {" "}
+                            {r?.candidateId?.mobile}
+                          </td>
                           <td className="px-4 py-2 before:content-['Technology:'] before:font-semibold md:before:content-none">
                             {r.tech}
                           </td>
@@ -223,6 +229,7 @@ function AdminResult() {
                   </tbody>
                 </table>
               </div>
+              <ToastContainer position="top-right" autoClose={3000}/>
             </div>
           </>
         )}

@@ -1,20 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { quizAPI } from "../Services/api";
+import { Search, Edit, Trash2, Save, X } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-// SVG Icons Components
-const SearchIcon = () => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <circle cx="11" cy="11" r="8"></circle>
-    <path d="m21 21-4.35-4.35"></path>
-  </svg>
-);
 
 const PlusIcon = () => (
   <svg
@@ -29,67 +18,6 @@ const PlusIcon = () => (
     <line x1="5" y1="12" x2="19" y2="12"></line>
   </svg>
 );
-
-const EditIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-  </svg>
-);
-
-const TrashIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <polyline points="3,6 5,6 21,6"></polyline>
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-    <line x1="10" y1="11" x2="10" y2="17"></line>
-    <line x1="14" y1="11" x2="14" y2="17"></line>
-  </svg>
-);
-
-const SaveIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-    <polyline points="17,21 17,13 7,13 7,21"></polyline>
-    <polyline points="7,3 7,8 15,8"></polyline>
-  </svg>
-);
-
-const CloseIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <line x1="18" y1="6" x2="6" y2="18"></line>
-    <line x1="6" y1="6" x2="18" y2="18"></line>
-  </svg>
-);
-
-
 
 const CreateQuizpage = () => {
   const [quizzes, setQuizzes] = useState([]);
@@ -131,7 +59,7 @@ const CreateQuizpage = () => {
       console.log("Fetched quizzes:", response);
       setQuizzes(response);
     } catch (err) {
-      console.error("Error fetching quizzes:", err);
+      toast.error("Error fetching quizzes:", err);
       setError(err.message || "Failed to fetch quizzes");
     } finally {
       setLoading(false);
@@ -190,9 +118,9 @@ const CreateQuizpage = () => {
       try {
         await quizAPI.deleteQuiz(id);
         setQuizzes(quizzes.filter((quiz) => quiz._id !== id));
-        alert("Quiz deleted successfully!");
+        toast.error("Quiz deleted successfully!");
       } catch (err) {
-        alert("Error deleting quiz: " + err.message);
+        toast.error("Error deleting quiz: " + err.message);
       }
     }
   };
@@ -208,16 +136,18 @@ const CreateQuizpage = () => {
           )
         );
         console.log("quiz upadated", setQuizzes);
-        alert("Quiz updated successfully!");
+      toast.success("Quiz updated successfully!");
       } else {
         await quizAPI.createQuiz(updatedQuiz);
         await fetchQuizzes(); //refresh quizzes list locally
-        alert("Quiz created successfully!");
+        toast.success("Quiz created successfully!");
       }
       setShowQuizEditor(false);
+
+      
       setCurrentQuiz(null);
     } catch (err) {
-      alert("Error saving quiz: " + err.message);
+      toast.alert("Error saving quiz: " + err.message);
     } finally {
       setSaving(false);
     }
@@ -315,7 +245,7 @@ const CreateQuizpage = () => {
               disabled={saving}
               className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
             >
-              <CloseIcon />
+              <X />
             </button>
           </div>
 
@@ -408,15 +338,6 @@ const CreateQuizpage = () => {
                 <h3 className="text-lg font-semibold text-gray-800">
                   Questions
                 </h3>
-                {/* <button
-                  onClick={addQuestion}
-                  disabled={saving}
-                  className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
-                >
-                  <PlusIcon />
-                  <span>Add Question</span>
-                  
-                </button> */}
               </div>
 
               <div className="space-y-6">
@@ -436,9 +357,8 @@ const CreateQuizpage = () => {
                           disabled={saving}
                           className="text-red-500 hover:text-red-700 disabled:opacity-50"
                         >
-                          <TrashIcon />
+                          <Trash2 />
                         </button>
-                        
                       )}
                     </div>
 
@@ -493,25 +413,20 @@ const CreateQuizpage = () => {
                             placeholder={`Option ${optionIndex + 1}`}
                             className="flex-1 rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
                           />
-                          
                         </div>
                       ))}
                     </div>
-                
                   </div>
-                  
                 ))}
               </div>
-                <button
-                  onClick={addQuestion}
-                  disabled={saving}
-                  className="inline-flex items-center gap-4 px-3 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
-                >
-                  <PlusIcon />
-                  <span>Add Question</span>
-                  
-                </button>
-                     
+              <button
+                onClick={addQuestion}
+                disabled={saving}
+                className="inline-flex items-center gap-4 px-3 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
+              >
+                <PlusIcon />
+                <span>Add Question</span>
+              </button>
             </div>
           </div>
 
@@ -529,7 +444,7 @@ const CreateQuizpage = () => {
               disabled={saving}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white shadow hover:bg-blue-700 disabled:opacity-50"
             >
-              <SaveIcon />
+              <Save />
               <span>{saving ? "Saving..." : "Save Quiz"}</span>
             </button>
           </div>
@@ -592,7 +507,7 @@ const CreateQuizpage = () => {
 
   return (
     <div>
-      <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen rounded-lg bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max w-7xlmx-auto">
           {/* Header */}
 
@@ -612,7 +527,7 @@ const CreateQuizpage = () => {
             {/* Search */}
             <div className="relative">
               <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
-                <SearchIcon />
+                <Search />
               </span>
               <input
                 type="text"
@@ -666,13 +581,13 @@ const CreateQuizpage = () => {
                       onClick={() => handleEditQuiz(quiz)}
                       className="p-2 rounded-full bg-yellow-100 hover:bg-yellow-200 text-yellow-600"
                     >
-                      <EditIcon />
+                      <Edit />
                     </button>
                     <button
                       onClick={() => handleDeleteQuiz(quiz._id)}
                       className="p-2 rounded-full bg-red-100 hover:bg-red-200 text-red-600"
                     >
-                      <TrashIcon />
+                      <Trash2 />
                     </button>
                   </div>
                 </div>
@@ -756,6 +671,7 @@ const CreateQuizpage = () => {
           )}
         </div>
       </div>
+       <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

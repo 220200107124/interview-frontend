@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Edit3, Trash2, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -22,7 +24,7 @@ function AdminDashboard() {
       );
       setQuizzes(res.data);
     } catch (err) {
-      console.error("Failed to fetch quizzes", err);
+      toast.error("Failed to fetch quizzes", err);
     }
   };
 
@@ -32,7 +34,7 @@ function AdminDashboard() {
       await axios.delete(`${process.env.REACT_APP_API_URL}/api/quizzes/${id}`);
       fetchQuizzes();
     } catch (err) {
-      console.error("Failed to delete quiz", err);
+      toast.error("Failed to delete quiz", err);
     }
   };
 
@@ -131,8 +133,10 @@ function AdminDashboard() {
                             {quiz.category}
                           </span>
                         </td>
-                        <td className="px-6 py-4  leading-loose h-30
-                        ">
+                        <td
+                          className="px-6 py-4  leading-loose h-30
+                        "
+                        >
                           <span
                             className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                               quiz.difficulty === "Easy"
@@ -285,6 +289,7 @@ function AdminDashboard() {
           )}
         </div>
       </div>
+      <ToastContainer  position="top-right"  autoClose={3000}/>
     </div>
   );
 }
