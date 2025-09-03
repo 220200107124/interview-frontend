@@ -4,7 +4,6 @@ import { Search, Edit, Trash2, Save, X } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 const PlusIcon = () => (
   <svg
     width="20"
@@ -93,6 +92,7 @@ const CreateQuizpage = () => {
       description: "Quiz description",
       category: "General",
       difficulty: "Easy",
+      duration: "", 
       questions: [
         {
           question: "Sample question?",
@@ -101,6 +101,7 @@ const CreateQuizpage = () => {
         },
       ],
     };
+
     setCurrentQuiz(newQuiz);
     setShowQuizEditor(true);
   };
@@ -128,6 +129,10 @@ const CreateQuizpage = () => {
   const handleSaveQuiz = async (updatedQuiz) => {
     try {
       setSaving(true);
+      if (!updatedQuiz.duration || updatedQuiz.duration <= 0) {
+        toast.duration = "Duration must be greater than 0";
+      }
+
       if (updatedQuiz._id) {
         const response = await quizAPI.updateQuiz(updatedQuiz._id, updatedQuiz);
         setQuizzes(
@@ -136,7 +141,7 @@ const CreateQuizpage = () => {
           )
         );
         console.log("quiz upadated", setQuizzes);
-      toast.success("Quiz updated successfully!");
+        toast.success("Quiz updated successfully!");
       } else {
         await quizAPI.createQuiz(updatedQuiz);
         await fetchQuizzes(); //refresh quizzes list locally
@@ -144,7 +149,6 @@ const CreateQuizpage = () => {
       }
       setShowQuizEditor(false);
 
-      
       setCurrentQuiz(null);
     } catch (err) {
       toast.alert("Error saving quiz: " + err.message);
@@ -223,6 +227,9 @@ const CreateQuizpage = () => {
       if (!editedQuiz.description || editedQuiz.description.trim().length < 5) {
         newErrors.description =
           "Description must be at least 5 characters long";
+      }
+      if (!editedQuiz.duration || editedQuiz.duration <= 0) {
+        newErrors.duration = "Duration must be greater than 0";
       }
 
       setErrors(newErrors);
@@ -331,6 +338,26 @@ const CreateQuizpage = () => {
                 </p>
               )}
             </div>
+
+            {/* Duration */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Duration (minutes)
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={editedQuiz.duration || ""}
+                onChange={(e) => updateQuiz("duration", Number(e.target.value))}
+                disabled={saving}
+                className="mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+              />
+              {errors.duration && (
+                <p className="text-sm text-red-500 mt-1">{errors.duration}</p>
+              )}
+            </div>
+
+            <div></div>
 
             {/* Questions Section */}
             <div>
@@ -613,6 +640,7 @@ const CreateQuizpage = () => {
 
                 <div className="text-xs text-gray-500 flex justify-between mt-auto">
                   <span>{quiz.questions.length} questions</span>
+                  <span>{quiz.duration} min</span>
                   <span>{new Date(quiz.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
@@ -671,7 +699,7 @@ const CreateQuizpage = () => {
           )}
         </div>
       </div>
-       <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };
