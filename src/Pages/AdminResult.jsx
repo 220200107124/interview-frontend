@@ -110,7 +110,7 @@
               <>
                 {/* Charts Section */}
                 <div className="chart-section   grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-                  <div className="bg-white p-4 rounded-xl shadow">
+                  <div className="bg-white p-4 mb-5 rounded-xl shadow">
                     <h3 className="text-lg font-semibold mb-4 text-gray-700">
                       Average Scores per Quiz
                     </h3>

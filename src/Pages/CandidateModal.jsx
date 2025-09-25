@@ -24,6 +24,14 @@ function CandidateModal({ details, onClose }) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-2xl mx-4 p-6 overflow-y-auto max-h-[90vh]">
+         <div className="flex justify-end gap-3 mt-6">
+           <button
+            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+            onClick={onClose}
+          >
+            ← Back
+          </button>
+          </div>
         {/* Title */}
         <h2 className="text-xl font-semibold mb-4">
           Details for {details?.candidateId?.name} {details?.candidateId?.lname}
@@ -43,7 +51,9 @@ function CandidateModal({ details, onClose }) {
         </div>
 
         {/* Quiz Info */}
+        
         <div className="mt-4 space-y-2 text-gray-700">
+          
           <p>
             <strong>Quiz Title:</strong> {details?.quizTitle}
           </p>

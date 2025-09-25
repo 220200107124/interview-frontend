@@ -50,7 +50,7 @@ const AdminCandidatePage = () => {
     "Node",
     "JavaScript",
     "Next js",
-    "Graphic Design",
+    "Graphic Designer",
   ];
   const difficultyOptions = ["Easy", "Beginner", "Intermediate", "Advanced"];
 

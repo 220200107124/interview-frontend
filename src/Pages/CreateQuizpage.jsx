@@ -33,17 +33,18 @@ const CreateQuizpage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 4;
   const categories = [
-    "all",
+    
     "General",
     "React",
     "JavaScript",
     "Node",
-    "Graphic",
+    "Graphic Designer",
     "NextJs",
   ];
   const difficulties = ["all", "Easy", "Beginner", "Intermediate", "Advanced"];
 
   // Fetch quizzes from API
+   
   useEffect(() => {
     fetchQuizzes();
     console.log("fetching quizzes");
