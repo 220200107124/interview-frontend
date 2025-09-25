@@ -10,9 +10,6 @@ import AdminCandidatePage from "./Pages/AdminCandidatePage";
 import AdminResult from "./Pages/AdminResult";
 import Layout from "./Components/Layout";
 
-// import TestCandidatePage from './Pages/TestCandidatePage';
-// import CandidateDetail from './Pages/CandidateDetail';
-// import CandidateQuizpage from './Pages/CandidateQuizpage';
 
 function App() {
   console.log("test");

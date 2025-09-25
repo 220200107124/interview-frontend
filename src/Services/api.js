@@ -18,3 +18,8 @@ export const quizAPI = {
       .delete(`${process.env.REACT_APP_API_URL}/api/quizzes/${id}`)
       .then((res) => res.data),
 };
+export const candidateAPI={
+  getCandidates:()=>axios.get(`${process.env.REACT_APP_API_URL}/api/candidates`)
+  .then((res)=>res.data),
+  
+}

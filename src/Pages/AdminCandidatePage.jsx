@@ -7,6 +7,7 @@ import { useFormik } from "formik";
 import { candidateSchema } from "../utils/Schema";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import CandidateModal from "./CandidateModal";
 
 const AdminCandidatePage = () => {
   const [candidates, setCandidates] = useState([]);
@@ -18,22 +19,22 @@ const AdminCandidatePage = () => {
   const [serverError, setServerError] = useState("");
   const navigate = useNavigate();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [results, setResults] = useState([]);
+  const [, setResults] = useState([]);
+  const [selectedResult, setSelectedResult] = useState(null);
 
   useEffect(() => {
-    const fetchResults=async()=>{
-      try{
-        const res =await axios.get(`${process.env.REACT_APP_API_URL}/api/result`);
+    const fetchResults = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/result`
+        );
         setResults(res.data);
-
+      } catch (err) {
+        toast.error("failed to fetch results", err);
       }
-      catch(err){
-        toast.error("failed to fetch results",err);
-      }
-
-    }
+    };
     fetchResults();
-  },[]);
+  }, []);
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
@@ -94,26 +95,26 @@ const AdminCandidatePage = () => {
     },
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+  const fetchData = async () => {
+    setLoading(true);
 
-      try {
-        const [cRes, qRes] = await Promise.all([
-          axios.get(`${process.env.REACT_APP_API_URL}/api/candidates`),
-          axios.get(`${process.env.REACT_APP_API_URL}/api/quizzes`),
-          
-        ]);
-        setCandidates(cRes.data);
-        setQuizzes(qRes.data);
-        
-      } catch (err) {
-        toast.error("Fetch error:", err);
-        toast.error("Failed to load data. Please refresh the page.");
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      const [cRes, qRes] = await Promise.all([
+        axios.get(`${process.env.REACT_APP_API_URL}/api/candidates`),
+        axios.get(`${process.env.REACT_APP_API_URL}/api/quizzes`),
+      ]);
+      setCandidates(cRes.data);
+      setQuizzes(qRes.data);
+      console.log("candidate info", cRes.data);
+    } catch (err) {
+      toast.error("Fetch error:", err);
+      toast.error("Failed to load data. Please refresh the page.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -122,7 +123,7 @@ const AdminCandidatePage = () => {
 
   const handleUpdateCandidate = async () => {
     setLoading(true);
-  
+
     try {
       const res = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/candidates/${editingCandidate._id}`,
@@ -133,7 +134,7 @@ const AdminCandidatePage = () => {
         candidates.map((c) => (c._id === res.data._id ? res.data : c))
       );
       setEditingCandidate(null);
-
+      fetchData();
       toast.success("Candidate updated successfully!");
     } catch (err) {
       toast.error("Update error:", err);
@@ -150,10 +151,9 @@ const AdminCandidatePage = () => {
           `${process.env.REACT_APP_API_URL}/api/candidates/${id}`
         );
         setCandidates(candidates.filter((c) => c._id !== id));
-
+        fetchData();
         toast.success("Candidate deleted successfully!");
       } catch (err) {
-       
         toast.error("Failed to delete candidate. Please try again.");
       }
     }
@@ -196,8 +196,8 @@ const AdminCandidatePage = () => {
 
       toast.success(response.data.message || "Quiz assigned successfully!");
       setEditingCandidate(null);
+      fetchData();
     } catch (error) {
-    
       toast.error("Error sending test. Try again later.");
     } finally {
       setSending(false);
@@ -231,7 +231,7 @@ const AdminCandidatePage = () => {
       <div className="flex justify-end mb-6">
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-4 rounded-lg hover:bg-blue-700 transition"
         >
           <Plus size={18} /> Add Candidate
         </button>
@@ -368,7 +368,7 @@ const AdminCandidatePage = () => {
       )}
 
       {/* Candidate List */}
-      <div className="bg-white shadow-lg rounded-2xl p-6">
+      <div className="bg-white shadow-lg rounded-2xl py-6 px-4">
         <h2 className="text-xl font-semibold mb-4">Candidate List</h2>
         {candidates.length === 0 ? (
           <p>No candidates added yet.</p>
@@ -385,6 +385,7 @@ const AdminCandidatePage = () => {
 
                     <th className="px-4 py-2 text-left">Tech</th>
                     <th className="px-4 py-2 text-left">Difficulty</th>
+                    <th className="px-4 py-2 text-left">Status</th>
                     <th className="px-4 py-2 text-left">Actions</th>
                   </tr>
                 </thead>
@@ -433,9 +434,39 @@ const AdminCandidatePage = () => {
                       </td>
                       <td
                         className="px-4 py-2 block md:table-cell"
+                        data-label="Status"
+                      >
+                        {candidate?.assignment?.status && (
+                          <span className="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 inset-ring inset-ring-green-500/20">
+                            {" "}
+                            {candidate?.assignment?.status}
+                          </span>
+                        )}
+                      </td>
+                      <td
+                        className="px-4 py-2 block md:table-cell"
                         data-label="Actions"
                       >
                         <div className="flex flex-wrap gap-3">
+                          {candidate?.assignment?.token && (
+                            <div className="flex flex-wrap gap-3">
+                              {/* Test Button */}
+                              {candidate.assignment.status !== "completed" && (
+                                <button
+                                  onClick={() => {
+                                    navigate(
+                                      `/quiz/${candidate.assignment.token}`
+                                    );
+                                    toast.success("Navigating to quiz...");
+                                  }}
+                                  className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600"
+                                >
+                                  <PlayCircle size={16} /> Test
+                                </button>
+                              )}
+                            </div>
+                          )}
+
                           <button
                             onClick={() => handleEditCandidate(candidate)}
                             className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
@@ -454,45 +485,25 @@ const AdminCandidatePage = () => {
                             <Trash2 size={16} /> Delete
                           </button>
 
-                          {candidate.token && (
-                            <>
-                              {results.some(
-                                (r) =>
-                                  r.candidateId?._id === candidate._id &&
-                                  r.status === "submitted"
-                              ) ? (
-                                <>
-                                  <button
-                                    disabled
-                                    className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-gray-400 text-white rounded-lg cursor-not-allowed"
-                                  >
-                                    Submitted
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      navigate("/admin-result");
-                                      toast.success("Navigating to results...");
-                                    }}
-                                    className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                                  >
-                                    <BarChart2 size={16} /> Result
-                                  </button>
-                                </>
-                              ) : (
-                                <>
-                                  <button
-                                    onClick={() => {
-                                      navigate(`/quiz/${candidate.token}`);
-                                      toast.success("Navigating to quiz...");
-                                    }}
-                                    className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600"
-                                  >
-                                    <PlayCircle size={16} /> Test
-                                  </button>
-                                </>
-                              )}
-                            </>
-                          )}
+                          {candidate?.assignment?.status === "completed" &&
+                            candidate?.result && (
+                              <button
+                                onClick={() =>
+                                  setSelectedResult({
+                                    ...candidate.result,
+                                    candidateId: candidate,
+                                  })
+                                }
+                                className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                              >
+                                <BarChart2 size={16} /> Results
+                              </button>
+                            )}
+
+                          <CandidateModal
+                            details={selectedResult}
+                            onClose={() => setSelectedResult(null)}
+                          />
                         </div>
                       </td>
                     </tr>

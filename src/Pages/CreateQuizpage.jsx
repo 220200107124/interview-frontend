@@ -238,247 +238,248 @@ const CreateQuizpage = () => {
         onSave(editedQuiz);
       }
     };
-
+    
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b">
-            <h2 className="text-xl font-semibold text-gray-800">
-              {quiz._id ? "Edit Quiz" : "Create New Quiz"}
-            </h2>
-            <button
-              onClick={onCancel}
+
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b">
+        <h2 className="text-xl font-semibold text-gray-800">
+          {quiz._id ? "Edit Quiz" : "Create New Quiz"}
+        </h2>
+        <button
+          onClick={onCancel}
+          disabled={saving}
+          className="text-gray-500 hover:text-gray-700 disabled:opacity-50 p-1 rounded-md hover:bg-gray-100 transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="px-6 py-4 space-y-6">
+        {/* Title + Category */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Quiz Title
+            </label>
+            <input
+              type="text"
+              value={editedQuiz.title}
+              onChange={(e) => updateQuiz("title", e.target.value)}
               disabled={saving}
-              className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
-            >
-              <X />
-            </button>
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100 transition-colors"
+            />
+            {errors.title && (
+              <p className="text-sm text-red-500 mt-1">{errors.title}</p>
+            )}
           </div>
 
-          {/* Content */}
-          <div className="px-6 py-4 space-y-6">
-            {/* Title + Category */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Quiz Title
-                </label>
-                <input
-                  type="text"
-                  value={editedQuiz.title}
-                  onChange={(e) => updateQuiz("title", e.target.value)}
-                  disabled={saving}
-                  className="mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-                />
-                {errors.title && (
-                  <p className="text-sm text-red-500 mt-1">{errors.title}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Category
-                </label>
-                <select
-                  value={editedQuiz.category}
-                  onChange={(e) => updateQuiz("category", e.target.value)}
-                  disabled={saving}
-                  className="mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-                >
-                  <option value="General">General</option>
-                  <option value="React">React</option>
-                  <option value="JavaScript">JavaScript</option>
-                  <option value="Node">NodeJs</option>
-                  <option value="Graphic">Graphic Designer</option>
-                  <option value="Next Js">NextJs</option>
-                </select>
-                {errors.category && (
-                  <p className="text-sm text-red-500 mt-1">{errors.category}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Difficulty */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Difficulty
-              </label>
-              <select
-                value={editedQuiz.difficulty}
-                onChange={(e) => updateQuiz("difficulty", e.target.value)}
-                disabled={saving}
-                className="mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-              >
-                <option value="Easy">Easy</option>
-                <option value="Beginner">Beginner</option>
-                <option value="Intermediate">Intermediate</option>
-                <option value="Advanced">Advanced</option>
-              </select>
-              {errors.difficulty && (
-                <p className="text-sm text-red-500 mt-1">{errors.difficulty}</p>
-              )}
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Description
-              </label>
-              <textarea
-                rows={3}
-                value={editedQuiz.description}
-                onChange={(e) => updateQuiz("description", e.target.value)}
-                disabled={saving}
-                className="mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-              />
-              {errors.description && (
-                <p className="text-sm text-red-500 mt-1">
-                  {errors.description}
-                </p>
-              )}
-            </div>
-
-            {/* Duration */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Duration (minutes)
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={editedQuiz.duration || ""}
-                onChange={(e) => updateQuiz("duration", Number(e.target.value))}
-                disabled={saving}
-                className="mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-              />
-              {errors.duration && (
-                <p className="text-sm text-red-500 mt-1">{errors.duration}</p>
-              )}
-            </div>
-
-            <div></div>
-
-            {/* Questions Section */}
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  Questions
-                </h3>
-              </div>
-
-              <div className="space-y-6">
-                {editedQuiz.questions.map((question, questionIndex) => (
-                  <div
-                    key={questionIndex}
-                    className="border rounded-xl p-4 bg-gray-50"
-                  >
-                    {/* Question Header */}
-                    <div className="flex justify-between items-center mb-3">
-                      <h4 className="font-medium text-gray-700">
-                        Question {questionIndex + 1}
-                      </h4>
-                      {editedQuiz.questions.length > 1 && (
-                        <button
-                          onClick={() => removeQuestion(questionIndex)}
-                          disabled={saving}
-                          className="text-red-500 hover:text-red-700 disabled:opacity-50"
-                        >
-                          <Trash2 />
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Question Input */}
-                    <input
-                      type="text"
-                      value={question.question}
-                      onChange={(e) =>
-                        updateQuestion(
-                          questionIndex,
-                          "question",
-                          e.target.value
-                        )
-                      }
-                      disabled={saving}
-                      placeholder="Enter your question"
-                      className="w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 mb-4"
-                    />
-
-                    {/* Options */}
-                    <div className="space-y-2">
-                      {question.options.map((option, optionIndex) => (
-                        <div
-                          key={optionIndex}
-                          className="flex items-center gap-2"
-                        >
-                          <input
-                            type="radio"
-                            name={`question-${questionIndex}`}
-                            checked={question.correctAnswer === optionIndex}
-                            onChange={() =>
-                              updateQuestion(
-                                questionIndex,
-                                "correctAnswer",
-                                optionIndex
-                              )
-                            }
-                            disabled={saving}
-                            className="text-blue-600 focus:ring-blue-500 disabled:opacity-50"
-                          />
-                          <input
-                            type="text"
-                            value={option}
-                            onChange={(e) =>
-                              updateQuestionOption(
-                                questionIndex,
-                                optionIndex,
-                                e.target.value
-                              )
-                            }
-                            disabled={saving}
-                            placeholder={`Option ${optionIndex + 1}`}
-                            className="flex-1 rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={addQuestion}
-                disabled={saving}
-                className="inline-flex items-center gap-4 px-3 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
-              >
-                <PlusIcon />
-                <span>Add Question</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-            <button
-              onClick={onCancel}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Category
+            </label>
+            <select
+              value={editedQuiz.category}
+              onChange={(e) => updateQuiz("category", e.target.value)}
               disabled={saving}
-              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100 transition-colors"
             >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white shadow hover:bg-blue-700 disabled:opacity-50"
-            >
-              <Save />
-              <span>{saving ? "Saving..." : "Save Quiz"}</span>
-            </button>
+              <option value="General">General</option>
+              <option value="React">React</option>
+              <option value="JavaScript">JavaScript</option>
+              <option value="Node">NodeJs</option>
+              <option value="Graphic">Graphic Designer</option>
+              <option value="Next Js">NextJs</option>
+            </select>
+            {errors.category && (
+              <p className="text-sm text-red-500 mt-1">{errors.category}</p>
+            )}
           </div>
         </div>
+
+        {/* Difficulty */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Difficulty
+          </label>
+          <select
+            value={editedQuiz.difficulty}
+            onChange={(e) => updateQuiz("difficulty", e.target.value)}
+            disabled={saving}
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100 transition-colors"
+          >
+            <option value="Easy">Easy</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+          {errors.difficulty && (
+            <p className="text-sm text-red-500 mt-1">{errors.difficulty}</p>
+          )}
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea
+            rows={3}
+            value={editedQuiz.description}
+            onChange={(e) => updateQuiz("description", e.target.value)}
+            disabled={saving}
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100 resize-none transition-colors"
+          />
+          {errors.description && (
+            <p className="text-sm text-red-500 mt-1">
+              {errors.description}
+            </p>
+          )}
+        </div>
+
+        {/* Duration */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Duration (minutes)
+          </label>
+          <input
+            type="number"
+            min="1"
+            value={editedQuiz.duration || ""}
+            onChange={(e) => updateQuiz("duration", Number(e.target.value))}
+            disabled={saving}
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100 transition-colors"
+          />
+          {errors.duration && (
+            <p className="text-sm text-red-500 mt-1">{errors.duration}</p>
+          )}
+        </div>
+
+        {/* Questions Section */}
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">
+              Questions
+            </h3>
+          </div>
+
+          <div className="space-y-6">
+            {editedQuiz.questions.map((question, questionIndex) => (
+              <div
+                key={questionIndex}
+                className="border border-gray-200 rounded-xl p-4 bg-gray-50"
+              >
+                {/* Question Header */}
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="font-medium text-gray-700">
+                    Question {questionIndex + 1}
+                  </h4>
+                  {editedQuiz.questions.length > 1 && (
+                    <button
+                      onClick={() => removeQuestion(questionIndex)}
+                      disabled={saving}
+                      className="text-red-500 hover:text-red-700 disabled:opacity-50 p-1 rounded-md hover:bg-red-50 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Question Input */}
+                <input
+                  type="text"
+                  value={question.question}
+                  onChange={(e) =>
+                    updateQuestion(
+                      questionIndex,
+                      "question",
+                      e.target.value
+                    )
+                  }
+                  disabled={saving}
+                  placeholder="Enter your question"
+                  className="w-full px-3 py-2 mb-4 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100 transition-colors"
+                />
+
+                {/* Options */}
+                <div className="space-y-2">
+                  {question.options.map((option, optionIndex) => (
+                    <div
+                      key={optionIndex}
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <input
+                        type="radio"
+                        name={`question-${questionIndex}`}
+                        checked={question.correctAnswer === optionIndex}
+                        onChange={() =>
+                          updateQuestion(
+                            questionIndex,
+                            "correctAnswer",
+                            optionIndex
+                          )
+                        }
+                        disabled={saving}
+                        className="text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                      />
+                      <input
+                        type="text"
+                        value={option}
+                        onChange={(e) =>
+                          updateQuestionOption(
+                            questionIndex,
+                            optionIndex,
+                            e.target.value
+                          )
+                        }
+                        disabled={saving}
+                        placeholder={`Option ${optionIndex + 1}`}
+                        className="flex-1 px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100 transition-colors"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={addQuestion}
+            disabled={saving}
+            className="inline-flex items-center gap-2 px-4 py-2 mt-4 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          >
+            <PlusIcon className="w-4 h-4" />
+            <span>Add Question</span>
+          </button>
+        </div>
       </div>
-    );
+
+      {/* Footer */}
+      <div className="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+        <button
+          onClick={onCancel}
+          disabled={saving}
+          className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white shadow hover:bg-blue-700 disabled:opacity-50 transition-colors"
+        >
+          <Save className="w-4 h-4" />
+          <span>{saving ? "Saving..." : "Save Quiz"}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
   };
+
 
   if (showQuizEditor) {
     return (
@@ -544,7 +545,7 @@ const CreateQuizpage = () => {
             </h1>
             <button
               onClick={handleCreateNewQuiz}
-              className="inline-flex items-center  gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hoover:bg-blue-700 transition"
+              className="inline-flex items-center mt-4 gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hoover:bg-blue-700 transition"
             >
               <PlusIcon />
               <span>Create New Quiz</span>
