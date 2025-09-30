@@ -143,6 +143,7 @@ const CreateQuizpage = () => {
         );
         console.log("quiz upadated", setQuizzes);
         toast.success("Quiz updated successfully!");
+        console.log("quiz created successfully",)
       } else {
         await quizAPI.createQuiz(updatedQuiz);
         await fetchQuizzes(); //refresh quizzes list locally

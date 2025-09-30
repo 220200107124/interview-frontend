@@ -94,12 +94,7 @@ function CandidateModal({ details, onClose }) {
 
         {/* Buttons */}
         <div className="flex justify-end gap-3 mt-6">
-          <button
-            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
-            onClick={onClose}
-          >
-            ← Back
-          </button>
+      
           <button
             className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
             onClick={onClose}

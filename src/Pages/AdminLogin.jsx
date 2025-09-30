@@ -7,6 +7,7 @@ function AdminLogin({ onLogin }) {
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
 
+
   // Formik setup
   const formik = useFormik({
     initialValues: {
@@ -27,6 +28,7 @@ function AdminLogin({ onLogin }) {
 
         localStorage.setItem("adminToken", token);
         localStorage.setItem("adminData", JSON.stringify(userInfo));
+        console.log("login successful ",response.data)
 
         onLogin(); // redirect to dashboard
       } catch (err) {
