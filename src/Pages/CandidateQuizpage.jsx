@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -8,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 const CandidateQuizPage = () => {
   const { candidateId } = useParams();
   const navigate = useNavigate();
+
   const [currentPage, setCurrentPage] = useState(1);
   const quizzesPerPage = 1;
 
@@ -20,22 +20,24 @@ const CandidateQuizPage = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [quizDetails, setQuizDetails] = useState(null);
 
-  // Answer change
-  const handleAnswerChange = (quizIndex, optionIndex) => {
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [quizIndex]: optionIndex,
-    }));
-  };
-
-  // Submit answers
+  // ----------------- Submit Answers -----------------
   const handleSubmitAll = async () => {
     if (submitted) return;
 
-    const formattedAnswers = quizzes.map((q, index) => ({
-      questionIndex: index,
-      selectedOption: selectedAnswers[index] ?? null,
-    }));
+    // const formattedAnswers = quizzes.map((q, index) => ({
+    //   questionIndex: index,
+    //   answer: selectedAnswers[index] ?? null,
+    //   type: q.type || "radio",
+    // }));
+    const formattedAnswers = quizzes.map((q, index) => {
+      let ans = selectedAnswers[index];
+      if (q.type === "checkbox" && !Array.isArray(ans)) ans = [];
+      return {
+        questionIndex: index,
+        answer: ans ?? null,
+        type: q.type || "radio",
+      };
+    });
 
     try {
       const res = await axios.post(
@@ -46,6 +48,7 @@ const CandidateQuizPage = () => {
           candidateName: candidate?.name || "",
           candidateEmail: candidate?.email || "",
           technology: candidate?.tech || "",
+
           answers: formattedAnswers,
         },
         { headers: { "Content-Type": "application/json" } }
@@ -62,7 +65,7 @@ const CandidateQuizPage = () => {
     }
   };
 
-  // Fetch candidate & quizzes
+  // ----------------- Fetch Candidate & Quiz -----------------
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -75,7 +78,6 @@ const CandidateQuizPage = () => {
 
         const durationTime = data?.data?.quizData?.duration;
         setQuizDetails(data?.data?.quizData);
-        console.log("quizdata", quizData);
 
         if (quizData && !Array.isArray(quizData)) quizData = [quizData];
         setAssignmentId(data?.data?._id);
@@ -84,7 +86,7 @@ const CandidateQuizPage = () => {
 
         if (data?.data?.status === "submitted") {
           toast.info("You have submitted this quiz.");
-          navigate("/candidate/thank-you");
+          navigate("/thank-you");
           return;
         }
 
@@ -102,7 +104,7 @@ const CandidateQuizPage = () => {
     fetchData();
   }, [candidateId, navigate]);
 
-  // Timer
+  // ----------------- Timer -----------------
   useEffect(() => {
     if (submitted || timeLeft <= 0) return;
 
@@ -120,11 +122,10 @@ const CandidateQuizPage = () => {
     return () => clearInterval(timerId);
   }, [timeLeft, submitted]);
 
-  // Timer display
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
-  // Pagination logic
+  // ----------------- Pagination -----------------
   const indexOfLastQuiz = currentPage * quizzesPerPage;
   const indexOfFirstQuiz = indexOfLastQuiz - quizzesPerPage;
   const currentQuizzes = quizzes.slice(indexOfFirstQuiz, indexOfLastQuiz);
@@ -145,6 +146,7 @@ const CandidateQuizPage = () => {
           </div>
         )}
 
+        {/* Candidate Info */}
         <div className="bg-gradient-to-r from-blue-50 to-blue-50 p-5 rounded-2xl shadow-inner mb-8 border border-blue-100">
           <p>
             <strong className="text-blue-600">Name:</strong> {candidate?.name}
@@ -155,18 +157,17 @@ const CandidateQuizPage = () => {
           <p>
             <strong className="text-blue-600">Tech:</strong> {candidate?.tech}
           </p>
-
           <p>
             <strong className="text-blue-600">Description:</strong>{" "}
             {quizDetails?.description}
           </p>
-
           <p>
             <strong className="text-blue-600">Difficulty:</strong>{" "}
-            {candidate?.difficulty}
+            {quizDetails?.difficulty}
           </p>
         </div>
 
+        {/* Quiz Questions */}
         {currentQuizzes.length > 0 && !submitted ? (
           currentQuizzes.map((quizItem, i) => {
             const quizIndex = indexOfFirstQuiz + i;
@@ -178,30 +179,115 @@ const CandidateQuizPage = () => {
                 <h3 className="font-semibold mb-4 text-lg text-gray-800">
                   Q{quizIndex + 1}: {quizItem.question}
                 </h3>
-                <ul className="space-y-3">
-                  {quizItem.options?.map((opt, optIdx) => (
-                    <li key={optIdx}>
-                      <label
-                        className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer border transition-all duration-200 ${
-                          selectedAnswers[quizIndex] === optIdx
-                            ? "bg-blue-100 border-blue-500 text-blue-700 font-medium"
-                            : "bg-gray-50 border-gray-200 hover:bg-gray-100"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name={`quiz-${quizIndex}`}
-                          value={optIdx}
-                          disabled={submitted}
-                          checked={selectedAnswers[quizIndex] === optIdx}
-                          onChange={() => handleAnswerChange(quizIndex, optIdx)}
-                          className="w-4 h-4 text-blue-600 focus:ring-blue-500"
-                        />
-                        {opt}
-                      </label>
-                    </li>
-                  ))}
-                </ul>
+
+                {/* Render based on question type */}
+                {quizItem.type === "radio" && (
+                  <ul className="space-y-3">
+                    {quizItem.options?.map((opt, optIdx) => (
+                      <li key={optIdx}>
+                        <label
+                          className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer border transition-all duration-200 ${
+                            selectedAnswers[quizIndex] === optIdx
+                              ? "bg-blue-100 border-blue-500 text-blue-700 font-medium"
+                              : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name={`quiz-${quizIndex}`}
+                            value={optIdx}
+                            disabled={submitted}
+                            checked={selectedAnswers[quizIndex] === optIdx}
+                            onChange={() =>
+                              setSelectedAnswers((prev) => ({
+                                ...prev,
+                                [quizIndex]: optIdx,
+                              }))
+                            }
+                            className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                          />
+                          {opt}
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {quizItem.type === "checkbox" && (
+                  <ul className="space-y-3">
+                    {quizItem.options?.map((opt, optIdx) => {
+                      const checked =
+                        Array.isArray(selectedAnswers[quizIndex]) &&
+                        selectedAnswers[quizIndex].includes(optIdx);
+                      return (
+                        <li key={optIdx}>
+                          <label
+                            className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer border transition-all duration-200 ${
+                              checked
+                                ? "bg-blue-100 border-blue-500 text-blue-700 font-medium"
+                                : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              value={optIdx}
+                              disabled={submitted}
+                              checked={checked}
+                              // onChange={(e) => {
+                              //   setSelectedAnswers((prev) => {
+                              //     const prevArr = Array.isArray(prev[quizIndex])
+                              //       ? [...prev[quizIndex]]
+                              //       : [];
+                              //     if (e.target.checked) {
+                              //       prevArr.push(optIdx);
+                              //     } else {
+                              //       const idx = prevArr.indexOf(optIdx);
+                              //       if (idx > -1) prevArr.splice(idx, 1);
+                              //     }
+                              //     return { ...prev, [quizIndex]: prevArr };
+                              //   });
+                              // }}
+                              onChange={(e) => {
+                                setSelectedAnswers((prev) => {
+                                  const prevArr = Array.isArray(prev[quizIndex])
+                                    ? [...prev[quizIndex]]
+                                    : [];
+                                  const optNumber = Number(optIdx); // onvert to number
+                                  if (e.target.checked) {
+                                    if (!prevArr.includes(optNumber))
+                                      prevArr.push(optNumber);
+                                  } else {
+                                    const idx = prevArr.indexOf(optNumber);
+                                    if (idx > -1) prevArr.splice(idx, 1);
+                                  }
+                                  return { ...prev, [quizIndex]: prevArr };
+                                });
+                              }}
+                              className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                            />
+                            {opt}
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+
+                {quizItem.type === "text" && (
+                  <input
+                    type="text"
+                    placeholder="Enter your answer"
+                    disabled={submitted}
+                    value={selectedAnswers[quizIndex] || ""}
+                    onChange={(e) =>
+                      setSelectedAnswers((prev) => ({
+                        ...prev,
+                        [quizIndex]: e.target.value,
+                      }))
+                    }
+                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                )}
               </div>
             );
           })
