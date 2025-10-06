@@ -89,6 +89,7 @@ const CandidateQuizPage = () => {
           navigate("/thank-you");
           return;
         }
+        console.log("status",data.status);
 
         setCandidate(candidateData);
         setQuizzes(quizData);
@@ -188,7 +189,7 @@ const CandidateQuizPage = () => {
                         <label
                           className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer border transition-all duration-200 ${
                             selectedAnswers[quizIndex] === optIdx
-                              ? "bg-blue-100 border-blue-500 text-blue-700 font-medium"
+                              ? "bg-blue-100 border-blue-500 text-blue-700 f  ont-medium"
                               : "bg-gray-50 border-gray-200 hover:bg-gray-100"
                           }`}
                         >
@@ -252,7 +253,7 @@ const CandidateQuizPage = () => {
                                   const prevArr = Array.isArray(prev[quizIndex])
                                     ? [...prev[quizIndex]]
                                     : [];
-                                  const optNumber = Number(optIdx); // onvert to number
+                                  const optNumber = Number(optIdx); // <-- convert to number
                                   if (e.target.checked) {
                                     if (!prevArr.includes(optNumber))
                                       prevArr.push(optNumber);

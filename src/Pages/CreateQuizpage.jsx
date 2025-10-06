@@ -703,8 +703,8 @@ const CreateQuizpage = () => {
 
   return (
     <div>
-      <div className="min-h-screen rounded-lg bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen rounded-lg bg-gray-100 py-8 px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-full">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <h1 className="text-3xl font-bold text-gray-800">
